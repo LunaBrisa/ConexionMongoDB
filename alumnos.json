@@ -1,0 +1,18 @@
+[
+    {
+        "nombre": "Brisa",
+        "apellido": "Luna",
+        "edad": 15,
+        "matricula": "215487",
+        "sexo": "F",
+        "es_objeto": false
+    },
+    {
+        "nombre": "Luna",
+        "apellido": "Castañeda",
+        "edad": 18,
+        "matricula": "23568978",
+        "sexo": "F",
+        "es_objeto": false
+    }
+]
