@@ -6,9 +6,10 @@ def conectar_mongo():
             "mongodb+srv://myAtlasDBUser:AvYTTPKntGncmQqi@myatlasclusteredu.xwouxsq.mongodb.net/?retryWrites=true&w=majority",
             serverSelectionTimeoutMS=3000
         )
-        client.server_info()
+        client.admin.command("ping")
         print("✅ Conexión exitosa a MongoDB Atlas.")
         return client
-    except errors.ServerSelectionTimeoutError as e:
-        print("❌ Error de conexión:", e)
+    except errors.PyMongoError:
+        print(f"❌ Error al conectar a MongoDB")
         return None
+    

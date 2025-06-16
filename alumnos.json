@@ -14,5 +14,37 @@
         "matricula": "23568978",
         "sexo": "F",
         "es_objeto": false
+    },
+    {
+        "nombre": "Diana",
+        "apellido": "Ochoa",
+        "edad": 20,
+        "matricula": "23170150",
+        "sexo": "F",
+        "es_objeto": false
+    },
+    {
+        "nombre": "Luis",
+        "apellido": "Perez",
+        "edad": 25,
+        "matricula": "2356897",
+        "sexo": "M",
+        "es_objeto": false
+    },
+    {
+        "nombre": "Ana",
+        "apellido": "Flores",
+        "edad": 25,
+        "matricula": "25368597",
+        "sexo": "F",
+        "es_objeto": false
+    },
+    {
+        "nombre": "Jesus",
+        "apellido": "Ortiz",
+        "edad": 18,
+        "matricula": "2356897",
+        "sexo": "M",
+        "es_objeto": false
     }
 ]

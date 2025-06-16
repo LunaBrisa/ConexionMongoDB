@@ -1,3 +1,4 @@
+from conexion import conectar_mongo
 from alumno import Alumno
 import json
 import os
@@ -5,22 +6,24 @@ import os
 class InterfazAlumno:
     def __init__(self, alumnos=None, archivo='alumnos.json'):
         self.archivo = archivo 
-        self.guardar=False    
+        self.guardar = False    
+
         if alumnos is not None:
             if isinstance(alumnos, Alumno):
                 self.alumnos = alumnos
             else:
                 self.alumnos = Alumno()
-                
             print("Usando clase alumno.")
         elif archivo and os.path.exists(archivo):
             print(f"Cargando alumnos desde archivo '{archivo}'.")
             self.alumnos = Alumno()
             self.alumnos.cargarArchivo(archivo, Alumno)
-            self.guardar=True
+            self.guardar = True
         else:
             print("No se proporcionó archivo ni objeto con datos. Creando lista vacía.")
             self.alumnos = Alumno()
+
+        self.sincronizar_alumnos_locales()
 
     def menu(self):
         while True:
@@ -55,12 +58,27 @@ class InterfazAlumno:
         alumno = Alumno(nombre, apellido, edad, matricula, sexo)
 
         self.alumnos.agregar(alumno)
+        alumno_dict = alumno.__dict__
+
+        client = conectar_mongo()
+        if client:
+            db = client["Escuela"]
+            coleccion = db["Alumnos"]
+            coleccion.insert_one(alumno_dict)
+            print("✅ Alumno guardado en MongoDB.")
+        else:
+            archivo_temp = "alumnos_no_sincronizados.json"
+            datos = []
+            if os.path.exists(archivo_temp):
+                with open(archivo_temp, "r") as f:
+                    datos = json.load(f)
+            datos.append(alumno_dict)
+            with open(archivo_temp, "w") as f:
+                json.dump(datos, f, indent=4)
+            print("⚠️ No hay conexión. Alumno guardado localmente en espera de sincronización.")
 
         if self.guardar:
             self.alumnos.guardarArchivo(self.archivo)
-            print("Alumno agregado y guardado en archivo correctamente.")
-        else:
-            print("Alumno agregado.")
 
     def eliminar_alumno(self):
         try:
@@ -103,3 +121,22 @@ class InterfazAlumno:
                 print("Índice fuera de rango.")
         except ValueError:
             print("Entrada inválida.")
+
+    def sincronizar_alumnos_locales(self):
+        archivo_temp = "alumnos_no_sincronizados.json"
+        if not os.path.exists(archivo_temp):
+            return
+
+        client = conectar_mongo()
+        if client:
+            with open(archivo_temp, "r") as f:
+                datos = json.load(f)
+
+            if datos:
+                db = client["Escuela"]
+                coleccion = db["Alumnos"]
+                coleccion.insert_many(datos)
+                print(f"✅ Se sincronizaron {len(datos)} alumnos con MongoDB.")
+                os.remove(archivo_temp)
+        else:
+            print("❌ Aún no hay conexión a MongoDB. No se puede sincronizar.")

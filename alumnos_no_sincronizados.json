@@ -1,0 +1,10 @@
+[
+    {
+        "nombre": "Ana",
+        "apellido": "Flores",
+        "edad": 25,
+        "matricula": "25368597",
+        "sexo": "F",
+        "es_objeto": false
+    }
+]

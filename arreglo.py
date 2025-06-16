@@ -32,10 +32,13 @@ class Arreglo:
         return f"Elementos: {len(self.items)}"
 
     def convertir_diccionario(self):
+        def limpiar(dic):
+            return {k: v for k, v in dic.items() if k != "_id"}
+
         if self.es_objeto:
-            return [vars(item) for item in self.items]
+            return [limpiar(vars(item)) for item in self.items]
         else:
-            return vars(self)
+            return limpiar(vars(self))
 
     def mostrar(self):
         if self.items:
