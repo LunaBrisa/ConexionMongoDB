@@ -1,4 +1,5 @@
 from maestro import Maestro
+from conexion import conectar_mongo
 import json
 import os
 
@@ -18,6 +19,8 @@ class InterfazMaestro:
         else:
             print("No se proporcionó archivo ni objeto con datos. Creando lista vacía.")
             self.maestros = Maestro()
+
+        self.sincronizar_maestros_locales()
 
     def menu(self):
         while True:
@@ -55,12 +58,27 @@ class InterfazMaestro:
         nuevo_maestro = Maestro(nombre, apellido, edad, matricula, especialidad)
 
         self.maestros.agregar(nuevo_maestro)
+        maestro_dict = nuevo_maestro.__dict__
+
+        client = conectar_mongo()
+        if client:
+            db = client["Escuela"]
+            coleccion = db["Maestros"]
+            coleccion.insert_one(maestro_dict)
+            print("✅ Maestro guardado en MongoDB.")
+        else:
+            archivo_temp = "maestros_no_sincronizados.json"
+            datos = []
+            if os.path.exists(archivo_temp):
+                with open(archivo_temp, "r") as f:
+                    datos = json.load(f)
+            datos.append(maestro_dict)
+            with open(archivo_temp, "w") as f:
+                json.dump(datos, f, indent=4)
+            print("⚠️ No hay conexión. Maestro guardado localmente en espera de sincronización.")
 
         if self.guardar:
             self.maestros.guardarArchivo(self.archivo)
-            print("Maestro agregado y guardado en archivo correctamente.")
-        else:
-            print("Maestro agregado.")
 
     def eliminar(self):
         try:
@@ -104,3 +122,22 @@ class InterfazMaestro:
                 print("Índice fuera de rango.")
         except ValueError:
             print("Entrada inválida.")
+
+    def sincronizar_maestros_locales(self):
+        archivo_temp = "maestros_no_sincronizados.json"
+        if not os.path.exists(archivo_temp):
+            return
+
+        client = conectar_mongo()
+        if client:
+            with open(archivo_temp, "r") as f:
+                datos = json.load(f)
+
+            if datos:
+                db = client["Escuela"]
+                coleccion = db["Maestros"]
+                coleccion.insert_many(datos)
+                print(f"✅ Se sincronizaron {len(datos)} maestros con MongoDB.")
+                os.remove(archivo_temp)
+        else:
+            print("❌ Aún no hay conexión a MongoDB. No se puede sincronizar.")

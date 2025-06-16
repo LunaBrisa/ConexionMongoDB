@@ -62,5 +62,61 @@
         "matricula": "4567",
         "especialidad": "FGHJ",
         "es_objeto": false
+    },
+    {
+        "nombre": "jose",
+        "apellido": "lopez",
+        "edad": 78,
+        "matricula": "123467",
+        "especialidad": "DB",
+        "es_objeto": false
+    },
+    {
+        "nombre": "Azael",
+        "apellido": "Candela",
+        "edad": 34,
+        "matricula": "12387",
+        "especialidad": "Programacion",
+        "es_objeto": false
+    },
+    {
+        "nombre": "Emilio",
+        "apellido": "Olvera",
+        "edad": 56,
+        "matricula": "12345",
+        "especialidad": "Programacion",
+        "es_objeto": false
+    },
+    {
+        "nombre": "EMILIO",
+        "apellido": "OLVERA",
+        "edad": 56,
+        "matricula": "123468",
+        "especialidad": "PROGRAMACION",
+        "es_objeto": false
+    },
+    {
+        "nombre": "JESUS",
+        "apellido": "PEREZ",
+        "edad": 45,
+        "matricula": "12378",
+        "especialidad": "base de datos",
+        "es_objeto": false
+    },
+    {
+        "nombre": "axel",
+        "apellido": "blanco",
+        "edad": 67,
+        "matricula": "12355",
+        "especialidad": "dibujo",
+        "es_objeto": false
+    },
+    {
+        "nombre": "brisa",
+        "apellido": "ortiz",
+        "edad": 34,
+        "matricula": "23170132",
+        "especialidad": "mate",
+        "es_objeto": false
     }
 ]

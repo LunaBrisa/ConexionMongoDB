@@ -33,6 +33,7 @@ class Maestro(Arreglo):
 
     def mostrar(self):
         print(str(self))
+        
 
 if __name__ == "__main__":
     from InterfazMaestro import InterfazMaestro

@@ -1,8 +1,11 @@
 from grupo import Grupo
 from InterfazMaestro import InterfazMaestro
 from InterfazAlumno import InterfazAlumno
+from conexion import conectar_mongo
 import json
 import os
+
+from maestro import Maestro
 
 class InterfazGrupo:
     def __init__(self, grupos=None, archivo="grupos.json"):
@@ -23,6 +26,7 @@ class InterfazGrupo:
 
         self.interfaz_maestro = InterfazMaestro()
         self.interfaz_alumno = InterfazAlumno()
+        self.sincronizar_grupos_locales()
 
     def menu(self):
         while True:
@@ -72,13 +76,32 @@ class InterfazGrupo:
         if agregar_mas == "s":
             print("\n--- Gestionando alumnos para el grupo ---")
             temp_alumnos = grupo.alumnos
-            
+
             interfaz_alumno = InterfazAlumno(temp_alumnos)
             interfaz_alumno.menu()
 
-            grupo.alumnos = self.interfaz_alumno.alumnos
+            grupo.alumnos = interfaz_alumno.alumnos
 
         self.grupos.agregar(grupo)
+
+        grupo_dict = grupo.convertir_dict_mongo() if hasattr(grupo, "convertir_dict_mongo") else grupo.__dict__
+
+        client = conectar_mongo()
+        if client:
+            db = client["Escuela"]
+            coleccion = db["Grupos"]
+            coleccion.insert_one(grupo_dict)
+            print("✅ Grupo guardado en MongoDB.")
+        else:
+            archivo_temp = "grupos_no_sincronizados.json"
+            datos = []
+            if os.path.exists(archivo_temp):
+                with open(archivo_temp, "r") as f:
+                    datos = json.load(f)
+            datos.append(grupo_dict)
+            with open(archivo_temp, "w") as f:
+                json.dump(datos, f, indent=4)
+            print("⚠️ No hay conexión. Grupo guardado localmente en espera de sincronización.")
 
         if self.guardar:
             self.grupos.guardarArchivo(self.archivo)
@@ -140,3 +163,22 @@ class InterfazGrupo:
                 print("Índice fuera de rango.")
         except ValueError:
             print("Entrada inválida.")
+
+    def sincronizar_grupos_locales(self):
+        archivo_temp = "grupos_no_sincronizados.json"
+        if not os.path.exists(archivo_temp):
+            return
+
+        client = conectar_mongo()
+        if client:
+            with open(archivo_temp, "r") as f:
+                datos = json.load(f)
+
+            if datos:
+                db = client["Escuela"]
+                coleccion = db["Grupos"]
+                coleccion.insert_many(datos)
+                print(f"✅ Se sincronizaron {len(datos)} grupos con MongoDB.")
+                os.remove(archivo_temp)
+        else:
+            print("❌ Aún no hay conexión a MongoDB. No se puede sincronizar.")
