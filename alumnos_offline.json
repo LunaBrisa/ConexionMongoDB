@@ -1,0 +1,26 @@
+[
+    {
+        "nombre": "saul",
+        "apellido": "sanchez",
+        "edad": 14,
+        "matricula": "123400",
+        "sexo": "M",
+        "es_objeto": false
+    },
+    {
+        "nombre": "saul",
+        "apellido": "perez",
+        "edad": 12,
+        "matricula": "12345678",
+        "sexo": "F",
+        "es_objeto": false
+    },
+    {
+        "nombre": "misa",
+        "apellido": "lol",
+        "edad": 34,
+        "matricula": "123490",
+        "sexo": "M",
+        "es_objeto": false
+    }
+]

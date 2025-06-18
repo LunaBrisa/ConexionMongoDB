@@ -19,6 +19,10 @@ class InterfazGrupo:
             print(f"Cargando grupos desde archivo '{archivo}'.")
             self.grupos = Grupo()
             self.grupos.cargarArchivo(archivo, Grupo)
+
+            self.grupos_offline = Grupo()
+            self.grupos_offline.cargarArchivo("grupos_offline.json", Grupo)
+
             self.guardar = True
         else:
             print("No se proporcionó archivo ni objeto con datos. Creando lista vacía.")
@@ -82,26 +86,20 @@ class InterfazGrupo:
 
             grupo.alumnos = interfaz_alumno.alumnos
 
-        self.grupos.agregar(grupo)
-
-        grupo_dict = grupo.convertir_dict_mongo() if hasattr(grupo, "convertir_dict_mongo") else grupo.__dict__
+       
 
         client = conectar_mongo()
         if client:
             db = client["Escuela"]
             coleccion = db["Grupos"]
+            grupo_dict = grupo.convertir_dict_mongo() if hasattr(grupo, "convertir_dict_mongo") else grupo.__dict__
             coleccion.insert_one(grupo_dict)
             print("✅ Grupo guardado en MongoDB.")
         else:
-            archivo_temp = "grupos_no_sincronizados.json"
-            datos = []
-            if os.path.exists(archivo_temp):
-                with open(archivo_temp, "r") as f:
-                    datos = json.load(f)
-            datos.append(grupo_dict)
-            with open(archivo_temp, "w") as f:
-                json.dump(datos, f, indent=4)
-            print("⚠️ No hay conexión. Grupo guardado localmente en espera de sincronización.")
+            self.grupos_offline.agregar(grupo)
+            self.grupos_offline.guardarArchivo(self.archivo_offline)
+
+        self.grupos.agregar(grupo)
 
         if self.guardar:
             self.grupos.guardarArchivo(self.archivo)

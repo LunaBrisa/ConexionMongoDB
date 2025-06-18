@@ -1,29 +1,46 @@
 from conexion import conectar_mongo
 from alumno import Alumno
-import json
 import os
 
 class InterfazAlumno:
-    def __init__(self, alumnos=None, archivo='alumnos.json'):
-        self.archivo = archivo 
-        self.guardar = False    
+    def __init__(self):
+        self.archivo = "alumnos.json"
+        self.archivo_offline = "alumnos_offline.json"
+        self.alumnos = Alumno()
+        self.alumnos_offline = Alumno()
+        
+        # Cargar datos existentes sin mensajes redundantes
+        if os.path.exists(self.archivo):
+            self.alumnos.cargarArchivo(self.archivo, Alumno)
+        if os.path.exists(self.archivo_offline):
+            self.alumnos_offline.cargarArchivo(self.archivo_offline, Alumno)
+        
+        # Sincronizar silenciosamente al iniciar
+        self._sincronizar_silencioso()
 
-        if alumnos is not None:
-            if isinstance(alumnos, Alumno):
-                self.alumnos = alumnos
-            else:
-                self.alumnos = Alumno()
-            print("Usando clase alumno.")
-        elif archivo and os.path.exists(archivo):
-            print(f"Cargando alumnos desde archivo '{archivo}'.")
-            self.alumnos = Alumno()
-            self.alumnos.cargarArchivo(archivo, Alumno)
-            self.guardar = True
-        else:
-            print("No se proporcionó archivo ni objeto con datos. Creando lista vacía.")
-            self.alumnos = Alumno()
+    def _sincronizar_silencioso(self):
+        """Sincronización automática sin mensajes"""
+        if self.alumnos_offline.items and conectar_mongo():
+            for alumno in list(self.alumnos_offline.items):
+                if self._guardar_en_mongo(alumno):
+                    self.alumnos_offline.eliminar(item=alumno)
+            self._guardar_datos()
 
-        self.sincronizar_alumnos_locales()
+    def _guardar_en_mongo(self, alumno):
+        """Intenta guardar en MongoDB devolviendo True/False"""
+        try:
+            db = conectar_mongo()
+            if db:
+                db.Alumnos.insert_one(alumno.convertir_dict_mongo())
+                return True
+        except:
+            return False
+        return False
+
+    def _guardar_datos(self):
+        """Guarda los datos sin mensajes redundantes"""
+        self.alumnos.guardarArchivo(self.archivo)
+        self.alumnos_offline.guardarArchivo(self.archivo_offline)
 
     def menu(self):
         while True:
@@ -32,111 +49,89 @@ class InterfazAlumno:
             print("2. Agregar alumno")
             print("3. Eliminar alumno")
             print("4. Actualizar alumno")
-            print("5. Salir")
+            print("5. Sincronizar ahora")
+            print("6. Salir")
 
             opcion = input("Seleccione una opción: ")
+            
             if opcion == "1":
-                print(json.dumps(self.alumnos.convertir_diccionario(), indent=4, ensure_ascii=False))
+                self._mostrar_alumnos()
             elif opcion == "2":
-                self.agregar_alumno()
+                self._agregar_alumno()
             elif opcion == "3":
-                self.eliminar_alumno()
+                self._eliminar_alumno()
             elif opcion == "4":
-                self.actualizar_alumno()
+                self._actualizar_alumno()
             elif opcion == "5":
-                print("Saliendo del sistema.")
+                self._sincronizar_manual()
+            elif opcion == "6":
+                self._guardar_datos()
                 break
-            else:
-                print("Opción no válida.")
 
-    def agregar_alumno(self):
-        nombre = input("Nombre: ")
-        apellido = input("Apellido: ")
-        edad = int(input("Edad: "))
-        matricula = input("Matrícula: ")
-        sexo = input("Sexo (M/F): ")
-        alumno = Alumno(nombre, apellido, edad, matricula, sexo)
+    def _mostrar_alumnos(self):
+        print("\nLISTA DE ALUMNOS:")
+        for i, alumno in enumerate(self.alumnos.items, 1):
+            print(f"{i}. {alumno.nombre} {alumno.apellido} - Matrícula: {alumno.matricula}")
 
+    def _agregar_alumno(self):
+        print("\nNUEVO ALUMNO")
+        alumno = Alumno(
+            input("Nombre: "),
+            input("Apellido: "),
+            int(input("Edad: ")),
+            input("Matrícula: "),
+            input("Sexo (M/F): ").upper()
+        )
+
+        if not self._guardar_en_mongo(alumno):
+            self.alumnos_offline.agregar(alumno)
+            print("(Guardado localmente - Se sincronizará automáticamente)")
+        
         self.alumnos.agregar(alumno)
-        alumno_dict = alumno.__dict__
+        self._guardar_datos()
 
-        client = conectar_mongo()
-        if client:
-            db = client["Escuela"]
-            coleccion = db["Alumnos"]
-            coleccion.insert_one(alumno_dict)
-            print("✅ Alumno guardado en MongoDB.")
-        else:
-            archivo_temp = "alumnos_no_sincronizados.json"
-            datos = []
-            if os.path.exists(archivo_temp):
-                with open(archivo_temp, "r") as f:
-                    datos = json.load(f)
-            datos.append(alumno_dict)
-            with open(archivo_temp, "w") as f:
-                json.dump(datos, f, indent=4)
-            print("⚠️ No hay conexión. Alumno guardado localmente en espera de sincronización.")
-
-        if self.guardar:
-            self.alumnos.guardarArchivo(self.archivo)
-
-    def eliminar_alumno(self):
+    def _eliminar_alumno(self):
+        self._mostrar_alumnos()
         try:
-            indice = int(input("Índice del alumno a eliminar: "))
-            if self.alumnos.eliminar(indice=indice):
-                if self.guardar:
-                    self.alumnos.guardarArchivo(self.archivo)
-                print("Alumno eliminado correctamente.")
-            else:
-                print("No se pudo eliminar.")
-        except ValueError:
-            print("Índice inválido.")
+            idx = int(input("Número de alumno a eliminar: ")) - 1
+            if 0 <= idx < len(self.alumnos.items):
+                self.alumnos.eliminar(indice=idx)
+                self._guardar_datos()
+        except:
+            print("Selección inválida")
 
-    def actualizar_alumno(self):
+    def _actualizar_alumno(self):
+        self._mostrar_alumnos()
         try:
-            indice = int(input("Índice del alumno a actualizar: "))
-            if 0 <= indice < len(self.alumnos.items):
-                alumno = self.alumnos.items[indice]
-                print("Deja en blanco si no quieres cambiar un campo.")
+            idx = int(input("Número de alumno a actualizar: ")) - 1
+            if 0 <= idx < len(self.alumnos.items):
+                alumno = self.alumnos.items[idx]
+                nuevos = {
+                    'nombre': input(f"Nuevo nombre ({alumno.nombre}): ") or alumno.nombre,
+                    'apellido': input(f"Nuevo apellido ({alumno.apellido}): ") or alumno.apellido,
+                    'edad': int(input(f"Nueva edad ({alumno.edad}): ") or alumno.edad),
+                    'matricula': input(f"Nueva matrícula ({alumno.matricula}): ") or alumno.matricula,
+                    'sexo': input(f"Nuevo sexo ({alumno.sexo}): ").upper() or alumno.sexo
+                }
+                self.alumnos.actualizar(alumno, **nuevos)
+                self._guardar_datos()
+        except:
+            print("Error en los datos")
 
-                nombre = input(f"Nombre ({alumno.nombre}): ") or alumno.nombre
-                apellido = input(f"Apellido ({alumno.apellido}): ") or alumno.apellido
-                edad = input(f"Edad ({alumno.edad}): ") or alumno.edad
-                matricula = input(f"Matrícula ({alumno.matricula}): ") or alumno.matricula
-                sexo = input(f"Sexo ({alumno.sexo}): ") or alumno.sexo
-
-                self.alumnos.actualizar(
-                    alumno,
-                    nombre=nombre,
-                    apellido=apellido,
-                    edad=int(edad),
-                    matricula=matricula,
-                    sexo=sexo
-                )
-
-                if self.guardar:
-                    self.alumnos.guardarArchivo(self.archivo)
-                print("Alumno actualizado correctamente.")
-            else:
-                print("Índice fuera de rango.")
-        except ValueError:
-            print("Entrada inválida.")
-
-    def sincronizar_alumnos_locales(self):
-        archivo_temp = "alumnos_no_sincronizados.json"
-        if not os.path.exists(archivo_temp):
+    def _sincronizar_manual(self):
+        pendientes = len(self.alumnos_offline.items)
+        if pendientes == 0:
+            print("No hay alumnos pendientes por sincronizar")
             return
+        
+        sincronizados = 0
+        for alumno in list(self.alumnos_offline.items):
+            if self._guardar_en_mongo(alumno):
+                self.alumnos_offline.eliminar(item=alumno)
+                sincronizados += 1
+        
+        self._guardar_datos()
+        print(f"Alumnos sincronizados: {sincronizados}/{pendientes}")
 
-        client = conectar_mongo()
-        if client:
-            with open(archivo_temp, "r") as f:
-                datos = json.load(f)
-
-            if datos:
-                db = client["Escuela"]
-                coleccion = db["Alumnos"]
-                coleccion.insert_many(datos)
-                print(f"✅ Se sincronizaron {len(datos)} alumnos con MongoDB.")
-                os.remove(archivo_temp)
-        else:
-            print("❌ Aún no hay conexión a MongoDB. No se puede sincronizar.")
+if __name__ == "__main__":
+    InterfazAlumno().menu()

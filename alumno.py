@@ -30,6 +30,18 @@ class Alumno(Arreglo):
             "matricula": self.matricula,
             "sexo": self.sexo
         }
+    
+    def guardar_mongo(self):
+        """Guarda el alumno en MongoDB"""
+        from conexion import conectar_mongo
+        db = conectar_mongo()
+        if db:
+            try:
+                db.Alumnos.insert_one(self.convertir_dict_mongo())
+                return True
+            except:
+                return False
+        return False
 
     def mostrar(self):
         print(str(self))

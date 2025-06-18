@@ -58,14 +58,6 @@ class Grupo(Arreglo):
         print("Alumnos:")
         self.alumnos.mostrar()
 
-    def convertir_dict_mongo(self):
-        return {
-        "nombre": self.nombre,
-        "grado": self.grado,
-        "seccion": self.seccion,
-        "maestro": self.maestro.convertir_diccionario() if self.maestro else None,
-        "alumnos": [alumno.convertir_diccionario() for alumno in self.alumnos.items]
-    }
 
 
 
