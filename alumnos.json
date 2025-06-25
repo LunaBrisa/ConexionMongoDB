@@ -70,5 +70,13 @@
         "matricula": "123490",
         "sexo": "M",
         "es_objeto": false
+    },
+    {
+        "nombre": "daniela",
+        "apellido": "luna",
+        "edad": 23,
+        "matricula": "12300",
+        "sexo": "F",
+        "es_objeto": false
     }
 ]
