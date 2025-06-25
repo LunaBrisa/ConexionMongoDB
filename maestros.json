@@ -118,5 +118,21 @@
         "matricula": "23170132",
         "especialidad": "mate",
         "es_objeto": false
+    },
+    {
+        "nombre": "Diana",
+        "apellido": "Altamirano",
+        "edad": 45,
+        "matricula": "100005",
+        "especialidad": "Soporte",
+        "es_objeto": false
+    },
+    {
+        "nombre": "lili",
+        "apellido": "martinez",
+        "edad": 58,
+        "matricula": "45789865",
+        "especialidad": "ingles",
+        "es_objeto": false
     }
 ]
