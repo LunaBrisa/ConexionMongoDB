@@ -8,14 +8,6 @@
         "es_objeto": false
     },
     {
-        "nombre": "Luna",
-        "apellido": "Castañeda",
-        "edad": 18,
-        "matricula": "23568978",
-        "sexo": "F",
-        "es_objeto": false
-    },
-    {
         "nombre": "Diana",
         "apellido": "Ochoa",
         "edad": 20,
@@ -24,50 +16,74 @@
         "es_objeto": false
     },
     {
-        "nombre": "Luis",
+        "nombre": "Luisa",
         "apellido": "Perez",
         "edad": 25,
-        "matricula": "2356897",
+        "matricula": "234568978",
+        "sexo": "F",
+        "es_objeto": false
+    },
+    {
+        "nombre": "Kiki",
+        "apellido": "Perezz",
+        "edad": 21,
+        "matricula": "23564879",
         "sexo": "M",
         "es_objeto": false
     },
     {
-        "nombre": "Ana",
-        "apellido": "Flores",
+        "nombre": "Mariana",
+        "apellido": "Lopez",
+        "edad": 24,
+        "matricula": "21548798",
+        "sexo": "F",
+        "es_objeto": false
+    },
+    {
+        "nombre": "Koko",
+        "apellido": "Lolo",
         "edad": 25,
-        "matricula": "25368597",
-        "sexo": "F",
-        "es_objeto": false
-    },
-    {
-        "nombre": "Jesus",
-        "apellido": "Ortiz",
-        "edad": 18,
-        "matricula": "2356897",
+        "matricula": "234546875",
         "sexo": "M",
         "es_objeto": false
     },
     {
-        "nombre": "saul",
-        "apellido": "sanchez",
+        "nombre": "Lulu",
+        "apellido": "Lalo",
+        "edad": 25,
+        "matricula": "235648855",
+        "sexo": "M",
+        "es_objeto": false
+    },
+    {
+        "nombre": "lili",
+        "apellido": "pepa",
+        "edad": 24,
+        "matricula": "23456875",
+        "sexo": "F",
+        "es_objeto": false
+    },
+    {
+        "nombre": "lolop",
+        "apellido": "popi",
         "edad": 14,
-        "matricula": "123400",
+        "matricula": "2548712564",
         "sexo": "M",
         "es_objeto": false
     },
     {
-        "nombre": "saul",
-        "apellido": "perez",
-        "edad": 12,
-        "matricula": "12345678",
+        "nombre": "Lopa",
+        "apellido": "Ruiz",
+        "edad": 15,
+        "matricula": "2354657",
         "sexo": "F",
         "es_objeto": false
     },
     {
-        "nombre": "misa",
-        "apellido": "lol",
-        "edad": 34,
-        "matricula": "123490",
+        "nombre": "Axel",
+        "apellido": "Espinoza",
+        "edad": 19,
+        "matricula": "23659878",
         "sexo": "M",
         "es_objeto": false
     },
